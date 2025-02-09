@@ -71,10 +71,26 @@ class Time:
         """
         return self.seconds
 
+    def get_total_seconds(self):
+        """ Returns the number of seconds since time 00:00:00.
+        >>> Time(0,0,1).get_total_seconds()
+        1
+        >>> Time(0,1,0).get_total_seconds()
+        60
+        >>> Time(1,0,0).get_total_seconds()
+        3600
+        >>> Time(13,30,5).get_total_seconds()
+        48605
+        """
+        return ((self.hours * MINUTES_IN_HOUR + self.minutes)
+                * SECONDS_IN_MINUTE + self.seconds)
+
+
 
 def main():
-    time = Time(11, 21, 21)
-    print(time.get_hours())
+    time = Time(1, 5, 0)
+    print(time)
+    print(time.get_total_seconds())
 
 if __name__ == "__main__":
     main()
