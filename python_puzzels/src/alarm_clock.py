@@ -45,9 +45,10 @@ class Time:
         >>> print(Time(10, -120, -150)) # __init__() test
         07:57:30
         """
-        self.hours = divmod(hours, HOURS_IN_DAY)[1] + divmod(minutes, MINUTES_IN_HOUR)[0]
-        self.minutes = divmod(minutes, MINUTES_IN_HOUR)[1] + divmod(seconds, SECONDS_IN_MINUTE)[0]
-        self.seconds = divmod(seconds, SECONDS_IN_MINUTE)[1]
+        extra_minutes, self.seconds = divmod(seconds, SECONDS_IN_MINUTE)
+        extra_hours, self.minutes = divmod(minutes + extra_minutes,
+                                           MINUTES_IN_HOUR)
+        self.hours = (hours + extra_hours) % HOURS_IN_DAY
 
     def get_hours(self):
         """ Returns the hours of the Time object.
