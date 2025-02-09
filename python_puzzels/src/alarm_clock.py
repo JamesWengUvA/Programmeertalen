@@ -159,6 +159,7 @@ class AlarmClock:
         >>> alarm_clock.add_event(event)
         """
         self.events.append(event)
+        self.sort()
 
     def __repr__(self):
         """ Returns a string representation of the AlarmClock object.
@@ -186,6 +187,18 @@ class AlarmClock:
         1
         """
         return len(self.events)
+
+    def sort(self):
+        """ Sorts the events by time.
+        >>> alarm_clock = AlarmClock()
+        >>> alarm_clock.add_event( Event(Time(0, 0, 2), "event2") )
+        >>> alarm_clock.add_event( Event(Time(0, 0, 1), "event1") )
+        >>> s = str(alarm_clock)
+        >>> s.find("event1") < s.find("event2")
+        True
+        """
+        self.events.sort(key=lambda event : str(event))
+
 
 
 def get_current_hours_minutes_seconds():
