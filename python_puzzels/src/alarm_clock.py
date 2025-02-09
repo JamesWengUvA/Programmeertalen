@@ -20,6 +20,28 @@ class Time:
         """
         return f"{self.hours:02}:{self.minutes:02}:{self.seconds:02}"
 
+    def __add__(self, other):
+        """ Returns a valid Time objects which is Time objects
+        'other' added to 'self'.
+        >>> print(Time(0,0,0) + Time(1,2,3))
+        01:02:03
+        >>> print(Time(13,30,0) + Time(1,46,-45))
+        15:15:15
+        """
+        return Time(self.hours + other.hours, self.minutes + other.minutes,
+                    self.seconds + other.seconds)
+
+    def __sub__(self, other):
+        """ Returns a valid Time objects which is Time objects
+        'other' substracted from 'self'.
+        >>> print(Time(10,10,10) - Time(1,2,3))
+        09:08:07
+        >>> print(Time(10,0,0) - Time(1,50,600))
+        08:00:00
+        """
+        return Time(self.hours - other.hours, self.minutes - other.minutes,
+                    self.seconds - other.seconds)
+
     def set_time(self, hours, minutes, seconds):
         """ Sets the time of the Time object to 'hours', 'minutes',
         and 'seconds' making sure the values are in valid range:
@@ -84,7 +106,6 @@ class Time:
         """
         return ((self.hours * MINUTES_IN_HOUR + self.minutes)
                 * SECONDS_IN_MINUTE + self.seconds)
-
 
 
 def main():
