@@ -1,3 +1,5 @@
+import time
+
 HOURS_IN_DAY = 24
 MINUTES_IN_HOUR = 60
 SECONDS_IN_MINUTE = 60
@@ -108,10 +110,19 @@ class Time:
                 * SECONDS_IN_MINUTE + self.seconds)
 
 
+def get_current_hours_minutes_seconds():
+    """ Returns the current (hours, minutes, seconds) as a tuple. """
+    t = time.localtime()
+    return (t.tm_hour, t.tm_min, t.tm_sec)
+
+
+def now():
+    """ Returns the current time as Time object. """
+    return Time(*get_current_hours_minutes_seconds())
+
+
 def main():
-    time = Time(1, 5, 0)
-    print(time)
-    print(time.get_total_seconds())
+    print("test")
 
 if __name__ == "__main__":
     main()
