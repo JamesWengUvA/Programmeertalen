@@ -1,4 +1,5 @@
 import time
+import memory_graph as mg
 
 HOURS_IN_DAY = 24
 MINUTES_IN_HOUR = 60
@@ -248,7 +249,7 @@ def main():
     alarm_clock.add_event(Event(now() + Time(0, 0, 1), "eat some breakfast"))
     alarm_clock.add_event(Event(now() + Time(0, 0, 2), "off to work"))
     alarm_clock.add_event(Event(now() + Time(0, 0, 3), "good morning, wake up"))
-    print(alarm_clock)
+    mg.s()
     alarm_clock.wait_for_and_handle_events()
 
 
