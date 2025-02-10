@@ -1,5 +1,7 @@
 import time
 import memory_graph as mg
+from gtts import gTTS
+import pygame
 
 HOURS_IN_DAY = 24
 MINUTES_IN_HOUR = 60
@@ -229,8 +231,20 @@ class AlarmClock:
         while self:
             current_time = now()
             event = self.remove_next_event()
-            time.sleep((event.time - current_time).get_total_seconds())
+            time.sleep((event.get_time() - current_time).get_total_seconds())
             print("ALARM:", event)
+            text_to_speech(event.get_description())
+
+
+def text_to_speech(text):
+    tts = gTTS(text=text, lang='en')
+    filename = "speech.mp3"
+    tts.save(filename)
+    pygame.mixer.init()
+    pygame.mixer.music.load(filename)
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy():
+        pass
 
 
 def get_current_hours_minutes_seconds():
@@ -247,9 +261,8 @@ def now():
 def main():
     alarm_clock = AlarmClock()
     alarm_clock.add_event(Event(now() + Time(0, 0, 1), "eat some breakfast"))
-    alarm_clock.add_event(Event(now() + Time(0, 0, 2), "off to work"))
-    alarm_clock.add_event(Event(now() + Time(0, 0, 3), "good morning, wake up"))
-    mg.s()
+    alarm_clock.add_event(Event(now() + Time(0, 0, 6), "off to work"))
+    alarm_clock.add_event(Event(now() + Time(0, 0, 11), "good morning, wake up"))
     alarm_clock.wait_for_and_handle_events()
 
 
