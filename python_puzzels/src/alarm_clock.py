@@ -226,14 +226,18 @@ class AlarmClock:
         """
         return self.events.pop(0)
 
-    def wait_for_and_handle_events(self):
+    def wait_for_and_handle_events(self, event_handler):
         """ Wait for each event to pass and then print the event. """
         while self:
             current_time = now()
             event = self.remove_next_event()
             time.sleep((event.get_time() - current_time).get_total_seconds())
-            print("ALARM:", event)
-            text_to_speech(event.get_description())
+            event_handler(event)
+
+
+def event_handler(event):
+    print("ALARM:", event)
+    text_to_speech(event.get_description())
 
 
 def text_to_speech(text):
