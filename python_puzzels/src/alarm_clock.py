@@ -199,6 +199,37 @@ class AlarmClock:
         """
         self.events.sort(key=lambda event : str(event))
 
+    def get_next_event(self):
+        """ Returns the next event with the smallest time.
+        >>> alarm_clock = AlarmClock()
+        >>> alarm_clock.add_event( Event(Time(0, 0, 2), "event2") )
+        >>> alarm_clock.get_next_event().get_description()
+        'event2'
+        >>> alarm_clock.add_event( Event(Time(0, 0, 1), "event1") )
+        >>> alarm_clock.get_next_event().get_description()
+        'event1'
+        """
+        return self.events[0]
+
+    def remove_next_event(self):
+        """ Removes and returns the next event with the smallest time.
+        >>> alarm_clock = AlarmClock()
+        >>> alarm_clock.add_event( Event(Time(0, 0, 2), "event2") )
+        >>> alarm_clock.add_event( Event(Time(0, 0, 1), "event1") )
+        >>> alarm_clock.remove_next_event().get_description()
+        'event1'
+        >>> alarm_clock.remove_next_event().get_description()
+        'event2'
+        """
+        return self.events.pop(0)
+
+    def wait_for_and_handle_events(self):
+        """ Wait for each event to pass and then print the event. """
+        while self:
+            current_time = now()
+            event = self.remove_next_event()
+            time.sleep((event.time - current_time).get_total_seconds())
+            print("ALARM:", event)
 
 
 def get_current_hours_minutes_seconds():
@@ -213,7 +244,12 @@ def now():
 
 
 def main():
-    print("test")
+    alarm_clock = AlarmClock()
+    alarm_clock.add_event(Event(now() + Time(0, 0, 1), "eat some breakfast"))
+    alarm_clock.add_event(Event(now() + Time(0, 0, 2), "off to work"))
+    alarm_clock.add_event(Event(now() + Time(0, 0, 3), "good morning, wake up"))
+    print(alarm_clock)
+    alarm_clock.wait_for_and_handle_events()
 
 
 if __name__ == "__main__":
