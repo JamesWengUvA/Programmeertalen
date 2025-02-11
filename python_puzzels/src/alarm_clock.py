@@ -23,7 +23,7 @@ class Time:
         >>> print( Time(8,5,30) )
         08:05:30
         """
-        return f"{self.hours:02}:{self.minutes:02}:{self.seconds:02}"
+        return f"{self.get_hours():02}:{self.get_minutes():02}:{self.get_seconds():02}"
 
     def __add__(self, other):
         """ Returns a valid Time objects which is Time objects
@@ -33,8 +33,9 @@ class Time:
         >>> print(Time(13,30,0) + Time(1,46,-45))
         15:15:15
         """
-        return Time(self.hours + other.hours, self.minutes + other.minutes,
-                    self.seconds + other.seconds)
+        return Time(self.get_hours() + other.get_hours(),
+                    self.get_minutes() + other.get_minutes(),
+                    self.get_seconds() + other.get_seconds())
 
     def __sub__(self, other):
         """ Returns a valid Time objects which is Time objects
@@ -44,8 +45,9 @@ class Time:
         >>> print(Time(10,0,0) - Time(1,50,600))
         08:00:00
         """
-        return Time(self.hours - other.hours, self.minutes - other.minutes,
-                    self.seconds - other.seconds)
+        return Time(self.get_hours() - other.get_hours(),
+                    self.get_minutes() - other.get_minutes(),
+                    self.get_seconds() - other.get_seconds())
 
     def set_time(self, hours, minutes, seconds):
         """ Sets the time of the Time object to 'hours', 'minutes',
@@ -72,31 +74,33 @@ class Time:
         >>> print(Time(10, -120, -150)) # __init__() test
         07:57:30
         """
-        extra_minutes, self.seconds = divmod(seconds, SECONDS_IN_MINUTE)
-        extra_hours, self.minutes = divmod(minutes + extra_minutes,
-                                           MINUTES_IN_HOUR)
-        self.hours = (hours + extra_hours) % HOURS_IN_DAY
+        extra_minutes, actual_seconds = divmod(seconds, SECONDS_IN_MINUTE)
+        extra_hours, actual_minutes = divmod(minutes + extra_minutes,
+                                             MINUTES_IN_HOUR)
+        actual_hours = (hours + extra_hours) % HOURS_IN_DAY
+        self.time = (actual_hours * 10000 + actual_minutes
+                     * 100 + actual_seconds)
 
     def get_hours(self):
         """ Returns the hours of the Time object.
         >>> Time(23,0,0).get_hours()
         23
         """
-        return self.hours
+        return self.time // 10000
 
     def get_minutes(self):
         """ Returns the minutes of the Time object.
         >>> Time(0,59,0).get_minutes()
         59
         """
-        return self.minutes
+        return self.time % 10000 // 100
 
     def get_seconds(self):
         """ Returns the seconds of the Time object.
         >>> Time(0,0,59).get_seconds()
         59
         """
-        return self.seconds
+        return self.time % 100
 
     def get_total_seconds(self):
         """ Returns the number of seconds since time 00:00:00.
@@ -109,8 +113,8 @@ class Time:
         >>> Time(13,30,5).get_total_seconds()
         48605
         """
-        return ((self.hours * MINUTES_IN_HOUR + self.minutes)
-                * SECONDS_IN_MINUTE + self.seconds)
+        return ((self.get_hours() * MINUTES_IN_HOUR + self.get_minutes())
+                * SECONDS_IN_MINUTE + self.get_seconds())
 
 
 class Event:
@@ -156,7 +160,8 @@ class AlarmClock:
         self.events = list()
 
     def add_event(self, event):
-        """ Adds an 'event' to this AlarmClock object, it doesn't return anything.
+        """ Adds an 'event' to this AlarmClock object,
+            it doesn't return anything.
         >>> alarm_clock = AlarmClock()
         >>> event = Event(Time(18, 30, 0), "dinner")
         >>> alarm_clock.add_event(event)
@@ -266,8 +271,10 @@ def main():
     alarm_clock = AlarmClock()
     alarm_clock.add_event(Event(now() + Time(0, 0, 1), "eat some breakfast"))
     alarm_clock.add_event(Event(now() + Time(0, 0, 6), "off to work"))
-    alarm_clock.add_event(Event(now() + Time(0, 0, 11), "good morning, wake up"))
-    alarm_clock.wait_for_and_handle_events()
+    alarm_clock.add_event(Event(now() + Time(0, 0, 11),
+                                "good morning, wake up"))
+    mg.s()
+    alarm_clock.wait_for_and_handle_events(event_handler)
 
 
 if __name__ == "__main__":
