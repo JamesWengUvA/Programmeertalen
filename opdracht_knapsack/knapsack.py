@@ -2,20 +2,26 @@
 Header comment
 """
 
+import random
+
 class Resources:
-    """Resources of the items and knapsack."""
+    """Describes the weight and volume of an object."""
     def __init__(self, weight, volume):
+        """Initialise Resources using the weight and volume."""
         self.weight = weight
         self.volume = volume
 
     def __repr__(self):
-        return f"Weight: {self.weight} Height: {self.volume}"
+        """Return a string displaying the weight and volume"""
+        return f"Weight: {self.weight} Volume: {self.volume}"
 
     def __add__(self, other):
+        """Add and return two Resources instances"""
         return Resources(self.weight + other.weight,
                          self.volume + other.volume)
 
     def __sub__(self, other):
+        """Subtract and return two Resources instances"""
         return Resources(self.weight - other.weight,
                          self.volume - other.volume)
 
@@ -25,70 +31,123 @@ class Resources:
 
 
 class Item:
-    """Item"""
+    """Item that will go into the knapsack"""
     def __init__(self, name, points, resources):
+        """Initialise Item using the name of the item, how many points it is
+        worth and the resources."""
         self.name = name
         self.points = points
         self.resources = resources
 
     def __repr__(self):
+        """Return a string with the name, points, and resources of the item."""
         return f"Name: {self.name} Points: {self.points} {self.resources}"
 
     def get_name(self):
+        """Return the name of the item."""
         return self.name
 
     def get_points(self):
+        """Return the points of the item."""
         return self.points
 
     def get_resources(self):
+        """Return the resources of the item."""
         return self.resources
 
 
 class Items:
-    """List of items"""
+    """A list of items"""
     def __init__(self):
+        """Initalise by making a list."""
         self.items = []
 
     def __repr__(self):
+        """Return a string with the list of items."""
         return f"{self.items}"
 
     def __len__(self):
+        """Return the length of the list of items."""
         return len(self.items)
 
     def __getitem__(self, index):
+        """Return the item on the given index."""
         return self.items[index]
 
     def add_item(self, item):
+        """Add an item to the list."""
         self.items.append(item)
 
     def remove_item(self, index):
+        """Remove the item on the given index from the list."""
         self.items.pop(index)
 
 
 class Knapsack:
     """Knapsack with items"""
     def __init__(self, resources):
+        """Initialise an empty knapsack with 0 points and the resources."""
         self._points = 0
-        self._resources = resources
         self._items = Items()
+        self._resources = resources
 
     def __repr__(self):
+        """Return a string with the points, resources, and list of items."""
         return f"Points: {self._points} {self._resources} Items: {self._items}"
 
     def __len__(self):
+        """Return the length of the list of items in the knapsack."""
         return len(self._items)
 
+    def __getitem__(self, index):
+        """Return the item in the knapsack on the given index."""
+        return self._items[index]
+
     def item_fits(self, item):
+        """Return true if the item fits in the knapsack, otherwise return
+        false."""
         item_resources = item.get_resources()
         return True if item_resources.fits_in(self._resources) else False
 
+    def add_item(self, item):
+        """Add item to knapsack and return true if the item fits in the
+        knapsack, otherwise return false."""
+        if not self.item_fits(item):
+            return False
+        self._items.add_item(item)
+        self._points += item.get_points()
+        self._resources -= item.get_resources()
+        return True
+
+    def remove_last_item(self):
+        """Remove the last item from the knapsack."""
+        i = len(self) - 1
+        self._points -= self._items[i].get_points()
+        self._items.remove_item(i)
+
+    def remove_random_item(self):
+        """Remove a random item from the knapsack."""
+        i = random.randint(0, len(self) - 1)
+        self._points -= self._items[i].get_points()
+        self._items.remove_item(i)
+
+    def get_points(self):
+        """Return the total number of points in the knapsack"""
+        return self._points
+
 
 def test():
-    knapsack = Knapsack(Resources(50, 50))
-    item0 = Item("Lamp", 15, Resources(20, 30))
-    item1 = Item("Table", 35, Resources(50, 80))
-    print(knapsack.item_fits(item0))
-    print(knapsack.item_fits(item1))
+    knapsack = Knapsack(Resources(1100, 1500))
+    item0 = Item("item0", 20, Resources(30, 45))
+    item1 = Item("item1", 30, Resources(35, 80))
+    item2 = Item("item2", 15, Resources(35, 40))
+    item3 = Item("item3", 25, Resources(40, 60))
+    knapsack.add_item(item0)
+    knapsack.add_item(item1)
+    knapsack.add_item(item2)
+    knapsack.add_item(item3)
+    knapsack._items.remove_item(1)
+    print(knapsack[1])
 
 
 def main():
@@ -101,35 +160,35 @@ def main():
     knapsack_file = "knapsack_small"
     print("=== solving:", knapsack_file)
     solve(solver_random, knapsack_file + ".csv",
-        knapsack_file + "_solution_random.csv")
+          knapsack_file + "_solution_random.csv")
     solve(solver_optimal_recursive, knapsack_file + ".csv",
-        knapsack_file + "_solution_optimal_recursive.csv")
+          knapsack_file + "_solution_optimal_recursive.csv")
     solve(solver_optimal_iterative_deepcopy, knapsack_file + ".csv",
-        knapsack_file + "_solution_optimal_iterative_deepcopy.csv")
+          knapsack_file + "_solution_optimal_iterative_deepcopy.csv")
     solve(solver_optimal_iterative, knapsack_file + ".csv",
-        knapsack_file + "_solution_optimal_iterative.csv")
+          knapsack_file + "_solution_optimal_iterative.csv")
     solve(solver_random_improved, knapsack_file + ".csv",
-        knapsack_file + "_solution_random_improved.csv")
+          knapsack_file + "_solution_random_improved.csv")
 
     knapsack_file = "knapsack_medium"
     print("=== solving:", knapsack_file)
     solve(solver_random, knapsack_file + ".csv",
-        knapsack_file + "_solution_random.csv")
+          knapsack_file + "_solution_random.csv")
     solve(solver_optimal_recursive, knapsack_file + ".csv",
-        knapsack_file + "_solution_optimal_recursive.csv")
+          knapsack_file + "_solution_optimal_recursive.csv")
     solve(solver_optimal_iterative_deepcopy, knapsack_file + ".csv",
-        knapsack_file + "_solution_optimal_iterative_deepcopy.csv")
+          knapsack_file + "_solution_optimal_iterative_deepcopy.csv")
     solve(solver_optimal_iterative, knapsack_file + ".csv",
-        knapsack_file + "_solution_optimal_iterative.csv")
+          knapsack_file + "_solution_optimal_iterative.csv")
     solve(solver_random_improved, knapsack_file + ".csv",
-        knapsack_file + "_solution_random_improved.csv")
+          knapsack_file + "_solution_random_improved.csv")
 
     knapsack_file = "knapsack_large"
     print("=== solving:", knapsack_file)
     solve(solver_random, knapsack_file + ".csv",
-        knapsack_file + "_solution_random.csv")
+          knapsack_file + "_solution_random.csv")
     solve(solver_random_improved, knapsack_file + ".csv",
-        knapsack_file + "_solution_random_improved.csv")
+          knapsack_file + "_solution_random_improved.csv")
 
 
 def solve(solver, knapsack_file, solution_file):
@@ -140,7 +199,7 @@ def solve(solver, knapsack_file, solution_file):
     solver.solve(knapsack, items)
     knapsack = solver.get_best_knapsack()
     print(f"saving solution with {
-        knapsack.get_points()} points to '{solution_file}'")
+          knapsack.get_points()} points to '{solution_file}'")
     knapsack.save(solution_file)
 
 
