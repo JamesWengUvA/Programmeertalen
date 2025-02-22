@@ -13,7 +13,7 @@ class Resources:
 
     def __repr__(self):
         """Return a string displaying the weight and volume"""
-        return f"Weight: {self.weight} Volume: {self.volume}"
+        return f"Weight: {self.weight}; Volume: {self.volume}"
 
     def __add__(self, other):
         """Add and return two Resources instances"""
@@ -41,7 +41,7 @@ class Item:
 
     def __repr__(self):
         """Return a string with the name, points, and resources of the item."""
-        return f"Name: {self.name} Points: {self.points} {self.resources}"
+        return f"Name: {self.name}; Points: {self.points}; {self.resources}"
 
     def get_name(self):
         """Return the name of the item."""
@@ -93,7 +93,7 @@ class Knapsack:
 
     def __repr__(self):
         """Return a string with the points, resources, and list of items."""
-        return f"Points: {self._points} {self._resources} Items: {self._items}"
+        return f"Points: {self._points}; {self._resources}; Items: {self._items}"
 
     def __len__(self):
         """Return the length of the list of items in the knapsack."""
@@ -137,26 +137,42 @@ class Knapsack:
 
     def save(self, filename):
         """Save the current state of the knapsack to filename."""
-        f = open(filename, "w")
-        f.write(f"points:{self.get_points()}\n")
-        for item in self._items:
-            f.write(f"{item.get_name()}\n")
-        f.close
+        with open(filename, "w") as f:
+            f.write(f"points:{self.get_points()}\n")
+            for item in self._items:
+                f.write(f"{item.get_name()}\n")
+
+
+def load_knapsack(knapsack_file):
+    """Return a knapsack and a list of items from the knapsack_file"""
+    with open(knapsack_file, "r") as f:
+        lines = f.read().splitlines()
+    knapsack_info = lines[1].split(", ")
+    knapsack = Knapsack(Resources(knapsack_info[2], knapsack_info[3]))
+    items = Items()
+    for i in range(2, len(lines)):
+        item_info = lines[i].split(", ")
+        items.add_item(Item(item_info[0], item_info[1],
+                                Resources(item_info[2], item_info[3])))
+    return knapsack, items
+
+
+def solve(solver, knapsack_file, solution_file):
+    """ Uses 'solver' to solve the knapsack problem in file
+    'knapsack_file' and writes the best solution to 'solution_file'.
+    """
+    knapsack, items = load_knapsack(knapsack_file)
+    solver.solve(knapsack, items)
+    knapsack = solver.get_best_knapsack()
+    print(f"""saving solution with {
+          knapsack.get_points()} points to '{solution_file}'""")
+    knapsack.save(solution_file)
 
 
 def test():
-    knapsack = Knapsack(Resources(1100, 1500))
-    item0 = Item("item0", 20, Resources(30, 45))
-    item1 = Item("item1", 30, Resources(35, 80))
-    item2 = Item("item2", 15, Resources(35, 40))
-    item3 = Item("item3", 25, Resources(40, 60))
-    knapsack.add_item(item0)
-    knapsack.add_item(item1)
-    knapsack.add_item(item2)
-    knapsack.add_item(item3)
-    knapsack.remove_random_item()
-    print(knapsack)
-    knapsack.save("test.csv")
+    knapsack, items = load_knapsack("knapsack_small.csv")
+    print (knapsack)
+    print (items)
 
 
 def main():
@@ -198,19 +214,6 @@ def main():
           knapsack_file + "_solution_random.csv")
     solve(solver_random_improved, knapsack_file + ".csv",
           knapsack_file + "_solution_random_improved.csv")
-
-
-def solve(solver, knapsack_file, solution_file):
-    """ Uses 'solver' to solve the knapsack problem in file
-    'knapsack_file' and writes the best solution to 'solution_file'.
-    """
-    knapsack, items = load_knapsack(knapsack_file)
-    solver.solve(knapsack, items)
-    knapsack = solver.get_best_knapsack()
-    print(f"""saving solution with {
-          knapsack.get_points()} points to '{solution_file}'""")
-    knapsack.save(solution_file)
-
 
 if __name__ == "__main__":  # keep this at the bottom of the file
     # main()
