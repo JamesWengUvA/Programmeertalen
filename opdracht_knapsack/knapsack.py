@@ -132,8 +132,16 @@ class Knapsack:
         self._items.remove_item(i)
 
     def get_points(self):
-        """Return the total number of points in the knapsack"""
+        """Return the total number of points in the knapsack."""
         return self._points
+
+    def save(self, filename):
+        """Save the current state of the knapsack to filename."""
+        f = open(filename, "w")
+        f.write(f"points:{self.get_points()}\n")
+        for item in self._items:
+            f.write(f"{item.get_name()}\n")
+        f.close
 
 
 def test():
@@ -146,8 +154,9 @@ def test():
     knapsack.add_item(item1)
     knapsack.add_item(item2)
     knapsack.add_item(item3)
-    knapsack._items.remove_item(1)
-    print(knapsack[1])
+    knapsack.remove_random_item()
+    print(knapsack)
+    knapsack.save("test.csv")
 
 
 def main():
@@ -198,8 +207,8 @@ def solve(solver, knapsack_file, solution_file):
     knapsack, items = load_knapsack(knapsack_file)
     solver.solve(knapsack, items)
     knapsack = solver.get_best_knapsack()
-    print(f"saving solution with {
-          knapsack.get_points()} points to '{solution_file}'")
+    print(f"""saving solution with {
+          knapsack.get_points()} points to '{solution_file}'""")
     knapsack.save(solution_file)
 
 
