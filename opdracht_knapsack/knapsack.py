@@ -166,6 +166,11 @@ class Knapsack:
 
 class Solver:
     """Solver used to solve knapsack problem."""
+    def __init__(self):
+        """Initialise solver and create empty best knapsack with no
+        resources."""
+        self.best_knapsack = Knapsack(Resources(0, 0))
+
     def solve(self, knapsack, items):
         """Solve the knapsack problem with the knapsack and the list of
         items by storing the knapsack with the most points."""
@@ -188,8 +193,8 @@ class Solver_Random(Solver):
     def __init__(self, runs):
         """Initialise random solver. The number of runs determine how
         many times the solver will try to solve the knapsack problem."""
+        super().__init__()
         self.runs = runs
-        self.best_knapsack = Knapsack(Resources(0, 0))
 
     def solve(self, knapsack, items):
         """Solve the knapsack problem by repeatedly inserting random items into
@@ -206,6 +211,34 @@ class Solver_Random(Solver):
             if self.best_knapsack.get_points() < knapsack.get_points():
                 self.update_best_knapsack(knapsack)
 
+
+class Solver_Optimal_Recursive(Solver):
+    """Solver that solves the knapsack problem by going through each
+    combination of items recursively."""
+
+    def __init__(self):
+        """Initialise optimal recursive solver."""
+        super().__init__()
+
+    def solve(self, knapsack, items):
+        """Solve knapsack problem by calling recursive function."""
+        self._recursive_function(knapsack, items, 0)
+
+    def _recursive_function(self, knapsack, items, index):
+        """Call itself after trying to add the item on index. Then remove the
+        item and call itself again. Save the new knapsack whenever it has more
+        points than the previous best."""
+        if self.best_knapsack.get_points() < knapsack.get_points():
+            self.update_best_knapsack(knapsack)
+
+        if index >= len(items):
+            return
+
+        if knapsack.add_item(items[index]):
+            self._recursive_function(knapsack, items, index + 1)
+            knapsack.remove_last_item()
+
+        self._recursive_function(knapsack, items, index + 1)
 
 def load_knapsack(knapsack_file):
     """Return a knapsack and a list of items from the knapsack_file"""
@@ -237,20 +270,11 @@ def solve(solver, knapsack_file, solution_file):
 
 def test():
     solver_random = Solver_Random(1000)
-    knapsack_file = "knapsack_small"
-    print("=== solving:", knapsack_file)
-    solve(solver_random, knapsack_file + ".csv",
-          knapsack_file + "_solution_random.csv")
-
+    solver_optimal_recursive = Solver_Optimal_Recursive()
     knapsack_file = "knapsack_medium"
     print("=== solving:", knapsack_file)
-    solve(solver_random, knapsack_file + ".csv",
-          knapsack_file + "_solution_random.csv")
-
-    knapsack_file = "knapsack_large"
-    print("=== solving:", knapsack_file)
-    solve(solver_random, knapsack_file + ".csv",
-          knapsack_file + "_solution_random.csv")
+    solve(solver_optimal_recursive, knapsack_file + ".csv",
+          knapsack_file + "_solution_optimal_recursive.csv")
 
 
 def main():
