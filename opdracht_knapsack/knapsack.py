@@ -59,8 +59,8 @@ class Item:
     def __eq__(self, other):
         """Return true if the two items are the same item."""
         if (self.name == other.name and self.points == other.points and
-            self.resources == other.resources):
-                return True
+                self.resources == other.resources):
+            return True
         return False
 
 
@@ -303,7 +303,8 @@ class Solver_Random_Improved(Solver_Random):
         """Initialise solver with the number of runs. Hill climb iterations
         determine how many times the hill climb algorithm will be applied."""
         super().__init__(runs)
-        self.hill_climb_iterations = 100  # This number may be changed manually.
+        # Hill climb iterations may be changed manually.
+        self.hill_climb_iterations = 100
 
     def solve(self, knapsack, items):
         super().solve(knapsack, items)
