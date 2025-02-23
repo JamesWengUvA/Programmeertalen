@@ -13,18 +13,24 @@ class Resources:
         self.volume = volume
 
     def __repr__(self):
-        """Return a string displaying the weight and volume"""
+        """Return a string displaying the weight and volume."""
         return f"Weight: {self.weight}; Volume: {self.volume}"
 
     def __add__(self, other):
-        """Add and return two Resources instances"""
+        """Add and return two Resources instances."""
         return Resources(self.weight + other.weight,
                          self.volume + other.volume)
 
     def __sub__(self, other):
-        """Subtract and return two Resources instances"""
+        """Subtract and return two Resources instances."""
         return Resources(self.weight - other.weight,
                          self.volume - other.volume)
+
+    def __eq__(self, other):
+        """Return true if the two resources have the same values."""
+        if self.weight == other.weight and self.volume == other.volume:
+            return True
+        return False
 
     def fits_in(self, other):
         """Return true if self fits in other."""
@@ -43,6 +49,13 @@ class Item:
     def __repr__(self):
         """Return a string with the name, points, and resources of the item."""
         return f"Name: {self.name}; Points: {self.points}; {self.resources}"
+
+    def __eq__(self, other):
+        """Return true if the two items are the same item."""
+        if (self.name == other.name and self.points == other.points and
+            self.resources == other.resources):
+            return True
+        return False
 
     def get_name(self):
         """Return the name of the item."""
@@ -79,7 +92,7 @@ class Items:
         """Add an item to the list."""
         self.items.append(item)
 
-    def remove_item(self, index):
+    def remove_index(self, index):
         """Remove and return the item on the given index from the list."""
         if self.items:
             return self.items.pop(index)
@@ -133,14 +146,14 @@ class Knapsack:
         i = len(self) - 1
         self._points -= self._items[i].get_points()
         self._resources -= self._items[i].get_resources()
-        return self._items.remove_item(i)
+        return self._items.remove_index(i)
 
     def remove_random_item(self):
         """Remove and return a random item from the knapsack."""
         i = random.randint(0, len(self) - 1)
         self._points -= self._items[i].get_points()
         self._resources -= self._items[i].get_resources()
-        return self._items.remove_item(i)
+        return self._items.remove_index(i)
 
     def get_points(self):
         """Return the total number of points in the knapsack."""
@@ -209,7 +222,6 @@ class Solver_Random(Solver):
                 i = available_items.pop()
                 if not knapsack.add_item(items[i]):
                     break
-
             self.check_best_knapsack(knapsack)
 
 
@@ -265,9 +277,9 @@ class Solver_Optimal_Iterative_Deepcopy(Solver):
 
 
 class Solver_Optimal_Iterative(Solver):
-    """Solver that solves the knapsack problem by trying all combinations of
-    items through a depth-first search. The DFS is done by storing lists
-    of item combinations."""
+    """An alternative version of the Solver_Optimal_Iterative_Deepcopy class
+    that doesn't use deepcopy. Instead of pushing knapsacks on a stack, the
+    solver pushes lists of items which it then adds to the knapsack."""
     def __init__(self):
         """Initialise the solver with an empty stack and a list for lists."""
         super().__init__()
@@ -295,8 +307,32 @@ class Solver_Optimal_Iterative(Solver):
             self.check_best_knapsack(knapsack)
 
 
+class Solver_Random_Improved(Solver_Random):
+    """An improved version of the Solver_Random class that uses a hill climbing
+    algorithm after the knapsack has been filled with random items."""
+    def __init__(self, runs):
+        """Initialise solver with the number of runs. Hill climb iterations
+        determine how many times the hill climb algorithm will be applied."""
+        super().__init__(runs)
+        self.hill_climb_iterations = 100 # This number may be changed manually
+
+    def solve(self, knapsack, items):
+        super().solve(knapsack, items)
+
+        for i in range(self.hill_climb_iterations):
+            knapsack = copy.deepcopy(self.best_knapsack)
+            knapsack.remove_random_item()
+            available_items = [item for item in items if item
+                               not in knapsack._items]
+            random.shuffle(available_items)
+            for item in available_items:
+                if not knapsack.add_item(item):
+                    break
+            self.check_best_knapsack(knapsack)
+
+
 def load_knapsack(knapsack_file):
-    """Return a knapsack and a list of items from the knapsack_file"""
+    """Return a knapsack and a list of items from the knapsack_file."""
     with open(knapsack_file, "r") as f:
         lines = f.read().splitlines()
     knapsack_info = lines[1].split(", ")
@@ -321,34 +357,6 @@ def solve(solver, knapsack_file, solution_file):
     print(f"""saving solution with {
           knapsack.get_points()} points to '{solution_file}'""")
     knapsack.save(solution_file)
-
-
-def test():
-    solver_random = Solver_Random(1000)
-    solver_optimal_recursive = Solver_Optimal_Recursive()
-    solver_optimal_iterative_deepcopy = Solver_Optimal_Iterative_Deepcopy()
-    solver_optimal_iterative = Solver_Optimal_Iterative()
-    knapsack_file = "knapsack_small"
-    print("=== solving:", knapsack_file)
-    solve(solver_random, knapsack_file + ".csv",
-          knapsack_file + "_solution_random.csv")
-    solve(solver_optimal_recursive, knapsack_file + ".csv",
-          knapsack_file + "_solution_optimal_recursive.csv")
-    solve(solver_optimal_iterative_deepcopy, knapsack_file + ".csv",
-          knapsack_file + "_solution_optimal_iterative_deepcopy.csv")
-    solve(solver_optimal_iterative, knapsack_file + ".csv",
-          knapsack_file + "_solution_optimal_iterative.csv")
-
-    knapsack_file = "knapsack_medium"
-    print("=== solving:", knapsack_file)
-    solve(solver_random, knapsack_file + ".csv",
-          knapsack_file + "_solution_random.csv")
-    solve(solver_optimal_recursive, knapsack_file + ".csv",
-          knapsack_file + "_solution_optimal_recursive.csv")
-    # solve(solver_optimal_iterative_deepcopy, knapsack_file + ".csv",
-    #       knapsack_file + "_solution_optimal_iterative_deepcopy.csv")
-    solve(solver_optimal_iterative, knapsack_file + ".csv",
-          knapsack_file + "_solution_optimal_iterative.csv")
 
 
 def main():
@@ -392,5 +400,4 @@ def main():
           knapsack_file + "_solution_random_improved.csv")
 
 if __name__ == "__main__":  # keep this at the bottom of the file
-    # main()
-    test()
+    main()
