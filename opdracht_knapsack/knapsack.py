@@ -1,9 +1,15 @@
 """
-Header comment
+Name: James Weng
+UvAnetID: 15685365
+Study: BSc Informatica
+
+This file has multiple Solver classes that solve the knapsack problem. The
+knapsack and items have a points value, weight and volume.
 """
 
 import random
 import copy
+
 
 class Resources:
     """Describes the weight and volume of an object."""
@@ -54,7 +60,7 @@ class Item:
         """Return true if the two items are the same item."""
         if (self.name == other.name and self.points == other.points and
             self.resources == other.resources):
-            return True
+                return True
         return False
 
 
@@ -297,7 +303,7 @@ class Solver_Random_Improved(Solver_Random):
         """Initialise solver with the number of runs. Hill climb iterations
         determine how many times the hill climb algorithm will be applied."""
         super().__init__(runs)
-        self.hill_climb_iterations = 100 # This number may be changed manually
+        self.hill_climb_iterations = 100  # This number may be changed manually.
 
     def solve(self, knapsack, items):
         super().solve(knapsack, items)
@@ -381,6 +387,7 @@ def main():
           knapsack_file + "_solution_random.csv")
     solve(solver_random_improved, knapsack_file + ".csv",
           knapsack_file + "_solution_random_improved.csv")
+
 
 if __name__ == "__main__":  # keep this at the bottom of the file
     main()
