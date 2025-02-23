@@ -240,6 +240,30 @@ class Solver_Optimal_Recursive(Solver):
 
         self._recursive_function(knapsack, items, index + 1)
 
+
+class Solver_Optimal_Iterative_Deepcopy(Solver):
+    """Solver that solves the knapsack problem by trying all combinations of
+    items through a depth-first search."""
+    def __init__(self):
+        """Initialise solver with an empty stack."""
+        super().__init__()
+        self.stack = []
+
+    def solve(self, knapsack, items):
+        """Solve the knapsack problem by doing a depth-first search using a
+        stack."""
+        self.stack.append((0, copy.deepcopy(knapsack)))
+        while self.stack:
+            i, knapsack = self.stack.pop()
+            if i >= len(items):
+                continue
+            self.stack.append((i + 1, copy.deepcopy(knapsack)))
+            if knapsack.add_item(items[i]):
+                self.stack.append((i + 1, copy.deepcopy(knapsack)))
+            if self.best_knapsack.get_points() < knapsack.get_points():
+                self.update_best_knapsack(knapsack)
+
+
 def load_knapsack(knapsack_file):
     """Return a knapsack and a list of items from the knapsack_file"""
     with open(knapsack_file, "r") as f:
@@ -271,9 +295,10 @@ def solve(solver, knapsack_file, solution_file):
 def test():
     solver_random = Solver_Random(1000)
     solver_optimal_recursive = Solver_Optimal_Recursive()
+    solver_optimal_iterative_deepcopy = Solver_Optimal_Iterative_Deepcopy()
     knapsack_file = "knapsack_medium"
     print("=== solving:", knapsack_file)
-    solve(solver_optimal_recursive, knapsack_file + ".csv",
+    solve(solver_optimal_iterative_deepcopy, knapsack_file + ".csv",
           knapsack_file + "_solution_optimal_recursive.csv")
 
 
