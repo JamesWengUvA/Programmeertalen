@@ -57,18 +57,6 @@ class Item:
             return True
         return False
 
-    def get_name(self):
-        """Return the name of the item."""
-        return self.name
-
-    def get_points(self):
-        """Return the points of the item."""
-        return self.points
-
-    def get_resources(self):
-        """Return the resources of the item."""
-        return self.resources
-
 
 class Items:
     """A list of items"""
@@ -126,8 +114,7 @@ class Knapsack:
     def item_fits(self, item):
         """Return true if the item fits in the knapsack, otherwise return
         false."""
-        item_resources = item.get_resources()
-        if item_resources.fits_in(self._capacity - self._resources):
+        if item.resources.fits_in(self._capacity - self._resources):
             return True
         return False
 
@@ -137,22 +124,22 @@ class Knapsack:
         if not self.item_fits(item):
             return False
         self._items.add_item(item)
-        self._points += item.get_points()
-        self._resources += item.get_resources()
+        self._points += item.points
+        self._resources += item.resources
         return True
 
     def remove_last_item(self):
         """Remove and return the last item from the knapsack."""
         i = len(self) - 1
-        self._points -= self._items[i].get_points()
-        self._resources -= self._items[i].get_resources()
+        self._points -= self._items[i].points
+        self._resources -= self._items[i].resources
         return self._items.remove_index(i)
 
     def remove_random_item(self):
         """Remove and return a random item from the knapsack."""
         i = random.randint(0, len(self) - 1)
-        self._points -= self._items[i].get_points()
-        self._resources -= self._items[i].get_resources()
+        self._points -= self._items[i].points
+        self._resources -= self._items[i].resources
         return self._items.remove_index(i)
 
     def get_points(self):
@@ -174,7 +161,7 @@ class Knapsack:
         with open(filename, "w") as f:
             f.write(f"points:{self.get_points()}\n")
             for item in self._items:
-                f.write(f"{item.get_name()}\n")
+                f.write(f"{item.name}\n")
 
 
 class Solver:
@@ -188,10 +175,6 @@ class Solver:
         """Solve the knapsack problem with the knapsack and the list of
         items by storing the knapsack with the most points."""
         pass
-
-    def get_best_knapsack(self):
-        """Return knapsack with the most points."""
-        return self.best_knapsack
 
     def check_best_knapsack(self, knapsack):
         """Update best knapsack to new knapsack if the new knapsack has more
@@ -353,7 +336,7 @@ def solve(solver, knapsack_file, solution_file):
     """
     knapsack, items = load_knapsack(knapsack_file)
     solver.solve(knapsack, items)
-    knapsack = solver.get_best_knapsack()
+    knapsack = solver.best_knapsack
     print(f"""saving solution with {
           knapsack.get_points()} points to '{solution_file}'""")
     knapsack.save(solution_file)
