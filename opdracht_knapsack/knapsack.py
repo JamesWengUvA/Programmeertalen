@@ -261,9 +261,10 @@ class Solver_Optimal_Iterative_Deepcopy(Solver):
             i, knapsack = self.stack.pop()
             if i >= len(items):
                 continue
-            self.stack.append((i + 1, copy.deepcopy(knapsack)))
+            self.stack.append((i + 1, knapsack))
+            knapsack = copy.deepcopy(knapsack)
             if knapsack.add_item(items[i]):
-                self.stack.append((i + 1, copy.deepcopy(knapsack)))
+                self.stack.append((i + 1, knapsack))
             self.check_best_knapsack(knapsack)
 
 
