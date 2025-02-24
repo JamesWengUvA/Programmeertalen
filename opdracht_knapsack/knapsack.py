@@ -189,6 +189,8 @@ class Solver:
             self.best_knapsack = Knapsack(knapsack.get_capacity())
             for item in knapsack:
                 self.best_knapsack.add_item(item)
+            return True
+        return False
 
 
 class Solver_Random(Solver):
@@ -304,21 +306,27 @@ class Solver_Random_Improved(Solver_Random):
         determine how many times the hill climb algorithm will be applied."""
         super().__init__(runs)
         # Hill climb iterations may be changed manually.
-        self.hill_climb_iterations = 100
+        self.hill_climb_iterations = 250
 
     def solve(self, knapsack, items):
         super().solve(knapsack, items)
+        knapsack = copy.deepcopy(self.best_knapsack)
+        available_items = [item for item in items if item
+                           not in knapsack._items]
 
         for i in range(self.hill_climb_iterations):
             knapsack = copy.deepcopy(self.best_knapsack)
-            knapsack.remove_random_item()
-            available_items = [item for item in items if item
-                               not in knapsack._items]
+            removed_item = knapsack.remove_random_item()
+            available_items.append(removed_item)
             random.shuffle(available_items)
             for item in available_items:
                 if not knapsack.add_item(item):
                     break
-            self.check_best_knapsack(knapsack)
+            if self.check_best_knapsack(knapsack):
+                available_items = [item for item in items if item
+                                   not in knapsack._items]
+            else:
+                available_items.remove(removed_item)
 
 
 def load_knapsack(knapsack_file):
