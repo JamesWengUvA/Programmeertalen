@@ -1,6 +1,11 @@
+*
+!*.*
+!Makefile
 test.py
 __pycache__
 .venv
 memory_graph.gv*
 speech.mp3
 *solution*
+*.o
+*.hi
