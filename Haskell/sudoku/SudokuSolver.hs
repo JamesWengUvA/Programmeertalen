@@ -21,6 +21,28 @@ blocks = [[1..3],[4..6],[7..9]]
 centerOfBlocks :: [Int]
 centerOfBlocks = [2, 5, 8]
 
+freeInRow :: Sudoku -> Row -> [Value]
+freeInRow sud row = values \\ [sud (row, col) | col <- positions, sud (row, col) /= 0]
+
+freeInColumn :: Sudoku -> Column -> [Value]
+freeInColumn sud col = values \\ [sud (row, col) | row <- positions, sud (row, col) /= 0]
+
+freeInSubgrid :: Sudoku -> (Row, Column) -> [Value]
+freeInSubgrid sud (r, c) = values \\ [sud (row, col) | row <- subgridRows r
+                                                       , col <- subgridCols c
+                                                       , sud (row, col) /= 0]
+  where subgridRows :: Row -> [Row]
+        subgridRows row = blocks !! div (row-1) 3
+        subgridCols :: Column -> [Column]
+        subgridCols col = blocks !! div (col-1) 3
+
+freeAtPos :: Sudoku -> (Row, Column) -> [Value]
+freeAtPos sud (r, c) = freeInRow sud r `intersect` freeInColumn sud c
+                       `intersect` freeInSubgrid sud (r, c)
+
+openPositions :: Sudoku -> [(Row, Column)]
+openPositions sud = [(row, col) | row <- positions, col <- positions, sud (row, col) == 0]
+
 sud2grid :: Sudoku -> Grid
 sud2grid s = [[s (r, c) | c <- positions] | r <- positions]
 
