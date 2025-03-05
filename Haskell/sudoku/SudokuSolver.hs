@@ -65,7 +65,9 @@ consistent sud = and ([rowValid sud row | row <- positions]
                           | row <- centerOfBlocks, col <- centerOfBlocks])
 
 constraints :: Sudoku -> [Constraint]
-constraints sud = [(row, col, freeAtPos sud (row, col)) | (row, col) <- openPositions sud]
+constraints sud = sortBy (\(_, _, a) (_, _, b) -> compare (length a) (length b))
+                         [(row, col, freeAtPos sud (row, col))
+                          | (row, col) <- openPositions sud]
 
 sud2grid :: Sudoku -> Grid
 sud2grid s = [[s (r, c) | c <- positions] | r <- positions]
@@ -103,6 +105,6 @@ main =
     do args <- getArgs
        sud <- (readSudoku . getSudokuName) args
        -- TODO: Call your solver.
-       let x = consistent sud
+       let x = constraints sud
        print x
        printSudoku sud
