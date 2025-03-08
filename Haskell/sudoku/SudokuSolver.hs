@@ -68,18 +68,18 @@ constraints sud = sortBy (\(_, _, a) (_, _, b) -> compare (length a) (length b))
                          [(row, col, freeAtPos sud (row, col))
                           | (row, col) <- openPositions sud]
 
-tryValues :: Sudoku -> Row -> Column -> [Value] -> Sudoku
-tryValues _ _ _ [] = error "No solution."
+tryValues :: Sudoku -> Row -> Column -> [Value] -> Maybe Sudoku
+tryValues _ _ _ [] = Nothing
 tryValues sud row col (value:vs) =
   let newSud = extend sud (row, col, value)
   in if consistent newSud
-     then case solveSudoku newSud of result | consistent result -> result
-                                            | otherwise -> tryValues sud row col vs
+     then case solveSudoku newSud of
+            Just result -> Just result
+            Nothing -> tryValues sud row col vs
      else tryValues sud row col vs
 
-solveSudoku :: Sudoku -> Sudoku
-solveSudoku sud | null (openPositions sud) && consistent sud = sud
-                | null (openPositions sud) = error "No solution."
+solveSudoku :: Sudoku -> Maybe Sudoku
+solveSudoku sud | null (openPositions sud) = if consistent sud then Just sud else Nothing
                 | otherwise = case constraints sud of
                      ((row, col, values):_) -> tryValues sud row col values
 
@@ -118,5 +118,6 @@ main :: IO ()
 main =
     do args <- getArgs
        sud <- (readSudoku . getSudokuName) args
-       let solution = solveSudoku sud
-       printSudoku solution
+       case solveSudoku sud of
+         Just solution -> printSudoku solution
+         Nothing -> error "No solution found"
