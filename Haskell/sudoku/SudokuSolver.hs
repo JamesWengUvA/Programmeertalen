@@ -43,10 +43,9 @@ openPositions :: Sudoku -> [(Row, Column)]
 openPositions sud = [(row, col) | row <- positions, col <- positions, sud (row, col) == 0]
 
 isValid :: [Value] -> Bool
-isValid values = isValid' values []
+isValid values = isValid' (filter (/=0) values) []
   where isValid' :: [Value] -> [Value] -> Bool
         isValid' [] _ = True
-        isValid' (0:xs) used = isValid' xs used
         isValid' (x:xs) used = notElem x used && isValid' xs (x:used)
 
 rowValid :: Sudoku -> Row -> Bool
@@ -68,6 +67,21 @@ constraints :: Sudoku -> [Constraint]
 constraints sud = sortBy (\(_, _, a) (_, _, b) -> compare (length a) (length b))
                          [(row, col, freeAtPos sud (row, col))
                           | (row, col) <- openPositions sud]
+
+tryValues :: Sudoku -> Row -> Column -> [Value] -> Sudoku
+tryValues _ _ _ [] = error "No solution."
+tryValues sud row col (value:vs) =
+  let newSud = extend sud (row, col, value)
+  in if consistent newSud
+     then case solveSudoku newSud of result | consistent result -> result
+                                            | otherwise -> tryValues sud row col vs
+     else tryValues sud row col vs
+
+solveSudoku :: Sudoku -> Sudoku
+solveSudoku sud | null (openPositions sud) && consistent sud = sud
+                | null (openPositions sud) = error "No solution."
+                | otherwise = case constraints sud of
+                     ((row, col, values):_) -> tryValues sud row col values
 
 sud2grid :: Sudoku -> Grid
 sud2grid s = [[s (r, c) | c <- positions] | r <- positions]
@@ -104,7 +118,5 @@ main :: IO ()
 main =
     do args <- getArgs
        sud <- (readSudoku . getSudokuName) args
-       -- TODO: Call your solver.
-       let x = constraints sud
-       print x
-       printSudoku sud
+       let solution = solveSudoku sud
+       printSudoku solution
