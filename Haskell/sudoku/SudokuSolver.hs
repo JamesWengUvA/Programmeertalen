@@ -37,21 +37,27 @@ centerOfSubgrids = [2, 5, 8]
 centerOfGreyBlocks :: [Int]
 centerOfGreyBlocks = [3, 7]
 
+-- Return a list of available values in the row.
 freeInRow :: Sudoku -> Row -> [Value]
 freeInRow sud row = values \\ [sud (row, col) | col <- positions, sud (row, col) /= 0]
 
+-- Return a list of available values in the column.
 freeInColumn :: Sudoku -> Column -> [Value]
 freeInColumn sud col = values \\ [sud (row, col) | row <- positions, sud (row, col) /= 0]
 
+-- Return a list of cells of the subgrid of which the given cell is in.
 findSubgrid :: (Row, Column) -> [(Row, Column)]
 findSubgrid (r, c) = [(row, col) | row <- findBlock r, col <- findBlock c]
   where
     findBlock :: Int -> [Int]
     findBlock i = blocks !! div (i-1) 3
 
+-- Return a list of available values in the subgrid.
 freeInSubgrid :: Sudoku -> (Row, Column) -> [Value]
 freeInSubgrid sud pos = values \\ filter (/=0) (map sud $ findSubgrid pos)
 
+{- Return a list of cells of the grey block of which the given cell is in.
+(Only applicable in ncr sudoku's.) -}
 findGreyBlock :: (Row, Column) -> Maybe [(Row, Column)]
 findGreyBlock (r, c)
     | inGrey r && inGrey c = Just [(row, col) | row <- rowBlock, col <- colBlock]
@@ -61,14 +67,18 @@ findGreyBlock (r, c)
     rowBlock = if r <= 4 then head greyBlocks else last greyBlocks
     colBlock = if c <= 4 then head greyBlocks else last greyBlocks
 
+-- Return a list of available values in the grey block. (Only applicable in ncr sudoku's.)
 freeInGrey :: Sudoku -> (Row, Column) -> [Value]
 freeInGrey sud (row, col) = case findGreyBlock (row, col) of
     Nothing -> values
     Just block -> values \\ filter (/= 0) (map sud block)
 
+-- Return a list of empty cells in the sudoku.
 openPositions :: Sudoku -> [(Row, Column)]
 openPositions sud = [(row, col) | row <- positions, col <- positions, sud (row, col) == 0]
 
+{- Return True if no values in the list repeat, otherwise return False.
+The function does not check for value 0. -}
 isValid :: [Value] -> Bool
 isValid values = isValid' (filter (/=0) values) []
   where
@@ -76,33 +86,48 @@ isValid values = isValid' (filter (/=0) values) []
     isValid' [] _ = True
     isValid' (x:xs) used = notElem x used && isValid' xs (x:used)
 
+-- Return True if no cells in the row have the same value, otherwise return False.
 rowValid :: Sudoku -> Row -> Bool
 rowValid sud row = isValid [sud (row, col) | col <- positions]
 
+-- Return True if no cells in the column have the same value, otherwise return False.
 colValid :: Sudoku -> Column -> Bool
 colValid sud col = isValid [sud (row, col) | row <- positions]
 
+-- Return True if no cells in the subgrid have the same value, otherwise return False.
 subgridValid :: Sudoku -> (Row, Column) -> Bool
 subgridValid sud (row, col) = isValid $ map sud $ findSubgrid (row, col)
 
+{- Return True if no cells in the subgrid have the same value, otherwise return False.
+(Only applicable in ncr sudoku's.) -}
 greyBlockValid :: Sudoku -> (Row, Column) -> Bool
 greyBlockValid sud (row, col) = case findGreyBlock (row, col) of
     Nothing -> True
     Just block -> isValid $ map sud block
 
+{- Return a solver based on the given implementations of the functions freeAtPos and
+consistent. -}
 solver :: (Sudoku -> (Row, Column) -> [Value]) -> (Sudoku -> Bool) -> Solver
 solver freeAtPosImpl consistentImpl = solveSudoku
   where
+    {- Solve a sudoku using the helper function tryValues and return solved sudoku or
+    Nothing if the sudoku has no solution. -}
     solveSudoku :: Sudoku -> Maybe Sudoku
-    solveSudoku sud | null (openPositions sud) = if consistentImpl sud then Just sud else Nothing
+    solveSudoku sud | null (openPositions sud) = if consistentImpl sud
+                                                 then Just sud
+                                                 else Nothing
                     | otherwise = case constraints sud of
                          ((row, col, values):_) -> tryValues sud row col values
 
+    {- Return a list of constraints of the sudoku, which describe the possible values of
+    a cell. -}
     constraints :: Sudoku -> [Constraint]
     constraints sud = sortBy
         (\(_, _, a) (_, _, b) -> compare (length a) (length b))
         [(row, col, freeAtPosImpl sud (row, col)) | (row, col) <- openPositions sud]
 
+    {- Extend sudoku with given row, column, and list of values, then calls
+    solveSudoku and/or tryValues. -}
     tryValues :: Sudoku -> Row -> Column -> [Value] -> Maybe Sudoku
     tryValues _ _ _ [] = Nothing
     tryValues sud row col (value:vs) =
@@ -113,6 +138,7 @@ solver freeAtPosImpl consistentImpl = solveSudoku
                 Nothing -> tryValues sud row col vs
             else tryValues sud row col vs
 
+{- Return solver based on standard sudoku rules. -}
 normalSolver :: Solver
 normalSolver = solver normalFreeAtPos normalConsistent
   where
@@ -127,6 +153,7 @@ normalSolver = solver normalFreeAtPos normalConsistent
         ++ [subgridValid sud (row, col)
             | row <- centerOfSubgrids, col <- centerOfSubgrids])
 
+{- Return solver based on ncr sudoku rules. -}
 nrcSolver :: Solver
 nrcSolver = solver nrcFreeAtPos nrcConsistent
   where
