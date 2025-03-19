@@ -1,8 +1,4 @@
 *
-!Erlang
-!*modules
-!*toe
-!*boxes
 !*.*
 *.beam
 !Makefile
