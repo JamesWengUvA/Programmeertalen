@@ -1,6 +1,10 @@
 *
 !Erlang
+!*modules
+!*toe
+!*boxes
 !*.*
+*.beam
 !Makefile
 test.py
 __pycache__
