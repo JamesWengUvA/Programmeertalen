@@ -1,7 +1,6 @@
 -module(grid).
 -export([show_hlines/2, show_vlines/2, print/1, new/2, get_wall/3, has_wall/2, add_wall/2]).
 
-% TODO: The other functions.
 new(Width, Height) ->
     {Width, Height, []}.
 
@@ -16,15 +15,30 @@ has_wall(Wall, Grid) ->
     {_, _, Walls} = Grid,
     lists:member(Wall, Walls).
 
-add_wall(Wall, Grid) ->
-    {Width, Height, Walls} = Grid,
-    {Width, Height, [Wall|Walls]}.
+add_wall(Wall, Grid) -> case has_wall(Wall, Grid) of
+    true -> Grid;
+    false ->
+        {Width, Height, Walls} = Grid,
+        {Width, Height, [Wall|Walls]}
+end.
 
-% TODO
-show_hlines(Row, Grid) -> "".
-% TODO
-show_vlines(Row, Grid) -> "".
+show_hlines(Row, Grid) ->
+    {Width, _, _} = Grid,
+    lists:flatmap(fun(X) ->
+        case has_wall(get_wall(X, Row, north), Grid) of
+            true -> "+--";
+            false -> "+  "
+        end
+    end, lists:seq(0, Width-1)) ++ "+~n".
 
+show_vlines(Row, Grid) ->
+    {Width, _, _} = Grid,
+    lists:flatten(lists:join("  ", lists:map(fun(X) ->
+        case has_wall(get_wall(X, Row, west), Grid) of
+            true -> "|";
+            false -> " "
+        end
+    end, lists:seq(0, Width))), "~n").
 
 % Prints this grid in a structured format
 % using the show_Xlines functions.
