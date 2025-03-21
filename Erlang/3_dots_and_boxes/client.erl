@@ -1,3 +1,8 @@
+% Name: James Weng
+% UvAnetID: 15685365
+% Study: BSc Informatica
+% This file creates a client process used in the dots and boxes game.
+
 -module(client).
 -export([move/0, new/0]).
 

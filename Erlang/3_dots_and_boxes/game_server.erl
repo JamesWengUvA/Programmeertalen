@@ -1,3 +1,10 @@
+% Name: James Weng
+% UvAnetID: 15685365
+% Study: BSc Informatica
+% This file creates a game gen server that maintains a game of dots and boxes.
+% The state contains the grid and the players. The player in the head of the
+% list is the one that has to make a move.
+
 -module(game_server).
 
 -behaviour(gen_server).
@@ -5,6 +12,7 @@
 -export([start_link/1, handle_call/3, handle_cast/2, handle_continue/2]).
 -export([init/1, move/2]).
 
+% Create a game server.
 start_link({W, H, Players}) ->
     gen_server:start_link(game_server, {W, H, Players}, []).
 
@@ -12,14 +20,14 @@ start_link({W, H, Players}) ->
 move(Pid, Wall) ->
     gen_server:call(Pid, {move, Wall}).
 
-% TODO: You need to inform the first player to move.
+% Informs the first player to move.
 init({Width, Height, Players}) ->
     Grid = grid:new(Width, Height),
     [H|_] = Players,
     H ! {move, self(), Grid},
     {ok, {Grid, Players}}.
 
-% TODO: add handle_call for move.
+% Handle move from player and return the score of the move.
 handle_call({move, Wall}, _From, State) ->
     {Grid, [H|T]} = State,
     case grid:has_wall(Wall, Grid) or not grid:is_valid_wall(Wall, Grid)of
@@ -42,6 +50,7 @@ handle_call(state, _From, State) ->
 handle_call({setWalls, Walls}, _From, {{W, H, _}, Players}) ->
     {reply, ok, {{W, H, Walls}, Players}}.
 
+% Check if the game is finished, otherwise tells next player to move.
 handle_continue(check_grid, State) ->
     {Grid, [H|T]} = State,
     case grid:get_open_spots(Grid) of
