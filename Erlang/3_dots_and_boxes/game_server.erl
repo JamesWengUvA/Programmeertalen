@@ -25,14 +25,14 @@ handle_call({move, Wall}, _From, State) ->
     case grid:has_wall(Wall, Grid) or not grid:is_valid_wall(Wall, Grid)of
         true -> {reply, {ok, 0}, {Grid, T ++ [H]}};
         false ->
-            New_grid = grid:add_wall(Wall, Grid),
+            NewGrid = grid:add_wall(Wall, Grid),
             {{X, Y}, {A, B}} = Wall,
-            {_, _, Walls} = New_grid,
+            {_, _, Walls} = NewGrid,
             case {grid:get_cell_walls(X, Y) -- Walls, grid:get_cell_walls(A, B) -- Walls} of
-                {[], []} -> {reply, {ok, 2}, {New_grid, [H|T]}, {continue, check_grid}};
-                {_, []} -> {reply, {ok, 1}, {New_grid, [H|T]}, {continue, check_grid}};
-                {[], _} -> {reply, {ok, 1}, {New_grid, [H|T]}, {continue, check_grid}};
-                {_, _} -> {reply, {ok, 0}, {New_grid, T ++ [H]}, {continue, check_grid}}
+                {[], []} -> {reply, {ok, 2}, {NewGrid, [H|T]}, {continue, check_grid}};
+                {_, []} -> {reply, {ok, 1}, {NewGrid, [H|T]}, {continue, check_grid}};
+                {[], _} -> {reply, {ok, 1}, {NewGrid, [H|T]}, {continue, check_grid}};
+                {_, _} -> {reply, {ok, 0}, {NewGrid, T ++ [H]}, {continue, check_grid}}
             end
     end;
 
@@ -47,7 +47,7 @@ handle_continue(check_grid, State) ->
     case grid:get_open_spots(Grid) of
         [] ->
             lists:map(fun(X) -> X ! finished end, [H|T]),
-            {stop, finished, State};
+            {stop, normal, State};
         _ ->
             H ! {move, self(), Grid},
             {noreply, State}
