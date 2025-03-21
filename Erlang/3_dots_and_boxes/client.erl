@@ -13,7 +13,10 @@ move() ->
         finished ->
             io:format("~p: I am done~n", [self()]);
         {move, ServerPid, Grid} ->
-            gen_server:call(ServerPid, {move, grid:choose_random_wall(Grid)}),
+            case grid:get_completable_walls(Grid) of
+                [] -> gen_server:call(ServerPid, {move, grid:choose_random_wall(Grid)});
+                [H|_] -> gen_server:call(ServerPid, {move, H})
+            end,
             move()
     end.
 

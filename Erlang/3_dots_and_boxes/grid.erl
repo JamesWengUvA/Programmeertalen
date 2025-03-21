@@ -7,7 +7,8 @@
 -module(grid).
 -export([show_hlines/2, show_vlines/2, print/1, new/2, get_wall/3, has_wall/2,
     add_wall/2, get_cell_walls/2, get_all_walls/2, get_open_spots/1,
-    choose_random_wall/1, is_valid_wall/2]).
+    choose_random_wall/1, is_valid_wall/2, get_open_cell_walls/3,
+    get_completable_walls/1]).
 
 % Return a new grid.
 new(Width, Height) ->
@@ -75,7 +76,7 @@ print(Grid) ->
 
 % Return a list of the possible walls neighbouring a cell.
 get_cell_walls(X, Y) ->
-    [get_wall(X, Y, Dir) || Dir <- [north, east, south, west]].
+    [get_wall(X, Y, Dir) || Dir <- [east, south, north, west]].
 
 % Return a list of all possible walls of a grid.
 get_all_walls(W, H) ->
@@ -97,3 +98,17 @@ end.
 is_valid_wall(Wall, Grid) ->
     {Width, Height, _} = Grid,
     lists:member(Wall, get_all_walls(Width, Height)).
+
+% Return a list of open walls of a cell.
+get_open_cell_walls(X, Y, Grid) ->
+    {_, _, Walls} = Grid,
+    get_cell_walls(X, Y) -- Walls.
+
+% Return a list of all open walls that would complete a cell when built.
+get_completable_walls(Grid) ->
+    {Width, Height, _} = Grid,
+    [Wall ||
+        X <- lists:seq(0, Width-1),
+        Y <- lists:seq(0, Height-1),
+        [Wall] <- [get_open_cell_walls(X, Y, Grid)],
+        length([Wall]) == 1].
