@@ -7,7 +7,7 @@
 -module(grid).
 -export([show_hlines/2, show_vlines/2, print/1, new/2, get_wall/3, has_wall/2,
     add_wall/2, get_cell_walls/2, get_all_walls/2, get_open_spots/1,
-    choose_random_wall/1]).
+    choose_random_wall/1, is_valid_wall/2]).
 
 % Return a new grid.
 new(Width, Height) ->
@@ -28,12 +28,13 @@ has_wall(Wall, Grid) ->
     lists:member(Wall, Walls).
 
 % Add a wall in the grid.
-add_wall(Wall, Grid) -> case has_wall(Wall, Grid) of
-    true -> Grid;
-    false ->
-        {Width, Height, Walls} = Grid,
-        {Width, Height, [Wall|Walls]}
-end.
+add_wall(Wall, Grid) ->
+    case has_wall(Wall, Grid) or not is_valid_wall(Wall, Grid) of
+        true -> Grid;
+        false ->
+            {Width, Height, Walls} = Grid,
+            {Width, Height, [Wall|Walls]}
+    end.
 
 % Helper function to print the horizontal walls.
 show_hlines(Row, Grid) ->
@@ -91,3 +92,8 @@ choose_random_wall(Grid) -> case get_open_spots(Grid) of
     [] -> [];
     L -> lists:nth(rand:uniform(length(L)), L)
 end.
+
+% Check if a wall is valid in the grid.
+is_valid_wall(Wall, Grid) ->
+    {Width, Height, _} = Grid,
+    lists:member(Wall, get_all_walls(Width, Height)).

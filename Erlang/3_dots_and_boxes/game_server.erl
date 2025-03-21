@@ -22,7 +22,7 @@ init({Width, Height, Players}) ->
 % TODO: add handle_call for move.
 handle_call({move, Wall}, _From, State) ->
     {Grid, [H|T]} = State,
-    case grid:has_wall(Wall, Grid) of
+    case grid:has_wall(Wall, Grid) or not grid:is_valid_wall(Wall, Grid)of
         true -> {reply, {ok, 0}, {Grid, T ++ [H]}};
         false ->
             New_grid = grid:add_wall(Wall, Grid),
